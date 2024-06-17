@@ -464,7 +464,7 @@ class AnnotationEditor {
     this.div.scrollIntoView({ block: "nearest" });
   }
 
-  drag(tx, ty) {
+  drag(tx, ty, mouseX, mouseY) {
     this.#initialPosition ||= [this.x, this.y];
     const [parentWidth, parentHeight] = this.parentDimensions;
     this.x += tx / parentWidth;
@@ -479,9 +479,38 @@ class AnnotationEditor {
 
       // The element will be outside of its parent so change the parent.
       const { x, y } = this.div.getBoundingClientRect();
+      const oldRotation = this.parent.viewport.rotation;
+      const deltaX = mouseX - x
+      const deltaY = mouseY - y
       if (this.parent.findNewParent(this, x, y)) {
-        this.x -= Math.floor(this.x);
-        this.y -= Math.floor(this.y);
+        const {x: newX, y: newY} = this.parent.getMousePositionOnPage(mouseX - deltaX, mouseY - deltaY)
+        const newRotation = this.parent.viewport.rotation;
+        if (newRotation === oldRotation) {
+          this.x -= Math.floor(this.x);
+          this.y -= Math.floor(this.y);
+        } else {
+          let newXY = [0, 0]
+          switch (newRotation) {
+            case 90:
+              newXY = [newY, 1 - newX];
+              break;
+            case 180:
+              newXY = [1 - newX, 1 - newY];
+              break;
+            case 270:
+              newXY = [1 - newY, newX];
+              break;
+            default:
+              newXY = [newX, newY];
+              break;
+          }
+          this.x = newXY[0];
+          this.y = newXY[1];
+          
+          this.rotation = (360 + newRotation) % 360;
+          this.div.setAttribute("data-editor-rotation", (360 - this.rotation) % 360);
+          this.pageRotation = newRotation;
+        }
       }
     }
 
@@ -1102,7 +1131,7 @@ class AnnotationEditor {
         );
         this.#prevDragX = x;
         this.#prevDragY = y;
-        this._uiManager.dragSelectedEditors(tx, ty);
+        this._uiManager.dragSelectedEditors(tx, ty, x, y);
       };
       window.addEventListener(
         "pointermove",

@@ -2107,12 +2107,12 @@ class AnnotationEditorUIManager {
    * @param {number} tx
    * @param {number} ty
    */
-  dragSelectedEditors(tx, ty) {
+  dragSelectedEditors(tx, ty, mouseX, mouseY) {
     if (!this.#draggingEditors) {
       return;
     }
     for (const editor of this.#draggingEditors.keys()) {
-      editor.drag(tx, ty);
+      editor.drag(tx, ty, mouseX, mouseY);
     }
   }
 

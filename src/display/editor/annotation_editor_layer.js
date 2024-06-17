@@ -814,6 +814,19 @@ class AnnotationEditorLayer {
     return true;
   }
 
+  getMousePositionOnPage(mouseX, mouseY) {
+    const {
+      x: pageX,
+      y: pageY,
+      width,
+      height,
+    } = this.div.getBoundingClientRect();
+
+    const x = (mouseX - pageX) / width;
+    const y = (mouseY - pageY) / height;
+    return {x, y};
+  }
+
   /**
    * Destroy the main editor.
    */
